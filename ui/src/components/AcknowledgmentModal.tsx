@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '../store'
 import { postAcknowledgeRequest } from '../api'
 import Modal from './Modal'
@@ -17,6 +17,14 @@ export default function AcknowledgmentModal({ isOpen, onClose }: AcknowledgmentM
   const acknowledgmentRequests = useAppStore((state) => state.acknowledgmentRequests)
   const addAcknowledgmentRequest = useAppStore((state) => state.addAcknowledgmentRequest)
   const username = useAppStore((state) => state.username)
+
+  // Reset form state when modal opens fresh (only reset when transitioning from closed to open)
+  useEffect(() => {
+    if (isOpen && !activeRequest) {
+      setSelectedUsers([])
+      setMessage('')
+    }
+  }, [isOpen])
 
   const handleAddUser = (user: string) => {
     if (user && !selectedUsers.includes(user)) {
@@ -65,6 +73,12 @@ export default function AcknowledgmentModal({ isOpen, onClose }: AcknowledgmentM
   const activeAckRequest = activeRequest
     ? acknowledgmentRequests.find((req) => req.id === activeRequest)
     : null
+
+  // Debug logging
+  if (activeAckRequest) {
+    console.log("Active acknowledgment request:", activeAckRequest.id);
+    console.log("Acknowledged by:", activeAckRequest.acknowledgedBy);
+  }
 
   return (
     <Modal
@@ -150,12 +164,10 @@ export default function AcknowledgmentModal({ isOpen, onClose }: AcknowledgmentM
       <div slot="footer" className="flex gap-2">
         <button
           onClick={() => {
-            onClose()
-            setSelectedUsers([])
-            setMessage('')
             setActiveRequest(null)
+            onClose()
           }}
-          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+          className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
         >
           Close
         </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { postAcknowledgeResponse } from '../api'
 import Modal from './Modal'
 
@@ -21,6 +21,13 @@ export default function AcknowledgmentRequestModal({
 }: AcknowledgmentRequestModalProps) {
   const [loading, setLoading] = useState(false)
   const [acknowledged, setAcknowledged] = useState(false)
+
+  // Reset acknowledged state when a new request arrives
+  useEffect(() => {
+    if (isOpen && requestId) {
+      setAcknowledged(false)
+    }
+  }, [requestId, isOpen])
 
   const handleAcknowledge = async () => {
     if (!requestId) return

@@ -95,7 +95,9 @@ export default function Dashboard() {
             message: payload.message,
           });
         } else if (eventType === "acknowledgment_response") {
+          console.log("Received acknowledgment_response:", payload);
           updateAcknowledgmentResponse(payload.request_id, payload.from_username);
+          console.log("Updated acknowledgment for request:", payload.request_id, "from:", payload.from_username);
         }
       } catch (e) {
         console.error("Failed to parse SSE message:", e);
