@@ -1,0 +1,6 @@
+package: handler
+generate:
+  gin-server: true
+  strict-server: true
+  models: true
+output: handler/api.gen.go

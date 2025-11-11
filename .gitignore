@@ -1,0 +1,23 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/.claude/
+/bin
+/vendor
+/ui/node_modules
+
+# Overmind
+.overmind.sock
+
+# OS
+.DS_Store
+
+# Node
+/ui/node_modules/
+/ui/dist
+/ui/.env

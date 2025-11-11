@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: Simple SSE Notification API
+  version: 1.0.0
+paths:
+  /login:
+    post:
+      summary: "Logs a user in (simulated)"
+      operationId: postLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Login successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /events:
+    get:
+      summary: "Subscribes to the SSE notification stream"
+      operationId: getEvents
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: "The username to subscribe as"
+      responses:
+        "200":
+          description: "SSE event stream"
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /notify:
+    post:
+      summary: "Broadcasts a notification"
+      operationId: postNotify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotifyRequest"
+      responses:
+        "200":
+          description: "Notification sent"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotifyResponse"
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+        - username
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+    NotifyRequest:
+      type: object
+      properties:
+        from_username:
+          type: string
+        target_username:
+          type: string
+          description: "A specific username or 'all'"
+        message:
+          type: string
+      required:
+        - from_username
+        - target_username
+        - message
+    NotifyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        from:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

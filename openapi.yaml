@@ -1,0 +1,246 @@
+openapi: 3.0.0
+info:
+  title: Simple SSE Notification API
+  version: 1.0.0
+paths:
+  /login:
+    post:
+      summary: "Logs a user in and creates a session"
+      operationId: postLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Login successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "session_id=abc123; Path=/; HttpOnly"
+        "400":
+          description: "Invalid request"
+        "401":
+          description: "Authentication failed"
+  /logout:
+    post:
+      summary: "Logs a user out and destroys the session"
+      operationId: postLogout
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: "Logout successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "401":
+          description: "Not authenticated"
+  /events:
+    get:
+      summary: "Subscribes to the SSE notification stream (requires authentication)"
+      operationId: getEvents
+      security:
+        - cookieAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: "SSE event stream"
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "401":
+          description: "Not authenticated"
+  /notify:
+    post:
+      summary: "Broadcasts a notification (requires authentication)"
+      operationId: postNotify
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotifyRequest"
+      responses:
+        "200":
+          description: "Notification sent"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotifyResponse"
+        "400":
+          description: "Invalid request"
+        "401":
+          description: "Not authenticated"
+  /users:
+    get:
+      summary: "Gets list of currently connected users (requires authentication)"
+      operationId: getUsers
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: "List of connected users"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersResponse"
+        "401":
+          description: "Not authenticated"
+  /acknowledge/request:
+    post:
+      summary: "Sends an acknowledgment request to user(s) (requires authentication)"
+      operationId: postAcknowledgeRequest
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcknowledgeRequestPayload"
+      responses:
+        "200":
+          description: "Acknowledgment request sent"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcknowledgeRequestResponse"
+        "400":
+          description: "Invalid request"
+        "401":
+          description: "Not authenticated"
+  /acknowledge/response:
+    post:
+      summary: "Responds to an acknowledgment request (requires authentication)"
+      operationId: postAcknowledgeResponse
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcknowledgeResponsePayload"
+      responses:
+        "200":
+          description: "Acknowledgment recorded"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcknowledgeResponseResponse"
+        "400":
+          description: "Invalid request"
+        "401":
+          description: "Not authenticated"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_id
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+        - username
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        username:
+          type: string
+    LogoutResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+    NotifyRequest:
+      type: object
+      properties:
+        from_username:
+          type: string
+        target_username:
+          type: string
+          description: "A specific username or 'all'"
+        message:
+          type: string
+      required:
+        - from_username
+        - target_username
+        - message
+    NotifyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        from:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    UsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: string
+          description: "List of connected usernames"
+    AcknowledgeRequestPayload:
+      type: object
+      properties:
+        to_usernames:
+          type: array
+          items:
+            type: string
+          description: "List of usernames to send acknowledgment request to"
+        message:
+          type: string
+          description: "Message for the acknowledgment request"
+      required:
+        - to_usernames
+        - message
+    AcknowledgeRequestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        request_id:
+          type: string
+    AcknowledgeResponsePayload:
+      type: object
+      properties:
+        request_id:
+          type: string
+          description: "ID of the acknowledgment request being responded to"
+      required:
+        - request_id
+    AcknowledgeResponseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
